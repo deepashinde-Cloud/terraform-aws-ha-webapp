@@ -114,3 +114,142 @@ resource "aws_lb" "web" {
     Name = "terraform-web-alb"
   }
 }
+
+/*Creating target group - 
+The target group is essentially a pool of backend servers.
+A target can be an EC2 instance, IP address, etc.
+An AWS Load Balancer Target Group acts as a logical routing destination that directs incoming traffic from your Elastic Load Balancer (ELB) to one or more registered backend resources. Instead of routing traffic directly to individual servers, the load balancer's listeners evaluate incoming requests based on routing rules and forward them to the designated target group.*/
+resource "aws_lb_target_group" "web" {
+  name     = "terraform-web-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    enabled             = true
+    path                = "/"
+    protocol            = "HTTP"
+    port                = "traffic-port"
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 5
+    interval            = 30
+  }
+
+  tags = {
+    Name = "terraform-web-target-group"
+  }
+}
+
+/*Creating EC2 security groups*/
+resource "aws_security_group" "ec2" {
+  name        = "terraform-ec2-sg"
+  description = "Security group for Terraform web servers"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "Allow HTTP from ALB"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "terraform-ec2-sg"
+  }
+}
+
+/*Creating 2 EC2 instances*/
+/*EC2-A*/
+resource "aws_instance" "web_a" {
+  ami           = "ami-06a83a7a581c729a9"
+  instance_type = "t3.micro"
+
+  subnet_id = aws_subnet.public_a.id
+
+  vpc_security_group_ids = [
+    aws_security_group.ec2.id
+  ]
+
+  associate_public_ip_address = true
+
+  user_data = <<-EOF
+    #!/bin/bash
+
+    dnf update -y
+    dnf install -y nginx
+
+    systemctl enable nginx
+    systemctl start nginx
+
+    echo "<h1>Hello from Terraform - Server A</h1>" > /usr/share/nginx/html/index.html
+  EOF
+
+  tags = {
+    Name = "terraform-web-server-a"
+  }
+}
+
+/*EC2-B*/
+resource "aws_instance" "web_b" {
+  ami           = "ami-06a83a7a581c729a9"
+  instance_type = "t3.micro"
+
+  subnet_id = aws_subnet.public_b.id
+
+  vpc_security_group_ids = [
+    aws_security_group.ec2.id
+  ]
+
+  associate_public_ip_address = true
+
+  user_data = <<-EOF
+    #!/bin/bash
+
+    dnf update -y
+    dnf install -y nginx
+
+    systemctl enable nginx
+    systemctl start nginx
+
+    echo "<h1>Hello from Terraform - Server B</h1>" > /usr/share/nginx/html/index.html
+  EOF
+
+  tags = {
+    Name = "terraform-web-server-b"
+  }
+}
+
+/*Register EC2 instances with the Target Group*/
+resource "aws_lb_target_group_attachment" "web_a" {
+  target_group_arn = aws_lb_target_group.web.arn
+  target_id        = aws_instance.web_a.id
+  port             = 80
+}
+
+resource "aws_lb_target_group_attachment" "web_b" {
+  target_group_arn = aws_lb_target_group.web.arn
+  target_id        = aws_instance.web_b.id
+  port             = 80
+}
+
+/*Creaing the ALB Listener*/
+resource "aws_lb_listener" "web" {
+  load_balancer_arn = aws_lb.web.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.web.arn
+  }
+}
