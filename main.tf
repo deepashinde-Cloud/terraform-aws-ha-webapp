@@ -55,3 +55,62 @@ resource "aws_route_table" "public" {
     Name = "terraform-public-route-table"
   }
 }
+
+/*Associating both subnets*/
+resource "aws_route_table_association" "public_a" {
+  subnet_id      = aws_subnet.public_a.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "public_b" {
+  subnet_id      = aws_subnet.public_b.id
+  route_table_id = aws_route_table.public.id
+}
+
+
+/*adding ALB sg*/
+resource "aws_security_group" "alb" {
+  name        = "terraform-alb-sg"
+  description = "Security group for Terraform ALB"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "Allow HTTP traffic"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "terraform-alb-sg"
+  }
+}
+
+/*Adding the ALB*/
+resource "aws_lb" "web" {
+  name               = "terraform-web-alb"
+  internal           = false
+  load_balancer_type = "application"
+
+  security_groups = [
+    aws_security_group.alb.id
+  ]
+
+  subnets = [
+    aws_subnet.public_a.id,
+    aws_subnet.public_b.id
+  ]
+
+  tags = {
+    Name = "terraform-web-alb"
+  }
+}
