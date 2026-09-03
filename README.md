@@ -216,10 +216,59 @@ The inbound rule allows users on the internet to send HTTP requests to the ALB.
 
 ### EC2 Security Group
 
-The EC2 security group controls traffic reaching the web servers.
+The EC2 instances use a separate Security Group that only allows HTTP traffic from the Application Load Balancer.
 
-The web servers listen on HTTP port `80`.
+| Direction | Protocol | Port | Source |
+|---|---|---:|---|
+| Inbound | TCP | 80 | ALB Security Group |
+| Outbound | All | All | `0.0.0.0/0` |
 
-The intention is to allow the application traffic required by the ALB to reach the EC2 instances while keeping the backend access controlled through Security Groups.
+The inbound rule allows HTTP traffic on port `80` only when the traffic originates from the ALB Security Group.
 
-Security Groups act as virtual firewalls at the instance/network-interface level.
+The EC2 instances are therefore not configured to accept HTTP traffic directly from the public internet.
+
+The traffic flow is:
+
+```text
+Internet
+   |
+   | HTTP :80
+   v
+ALB Security Group
+   |
+   | HTTP :80
+   v
+EC2 Security Group
+   |
+   v
+Nginx
+```
+
+## Terraform Project Structure
+
+The project uses multiple Terraform configuration files to organize the infrastructure and keep the configuration maintainable.
+
+```text
+terraform-aws-ha-webapp/
+│
+├── .devcontainer/
+│
+├── main.tf
+├── variables.tf
+├── versions.tf
+├── outputs.tf
+├── .gitignore
+├── README.md
+│
+└── screenshots/
+    ├── architecture.png
+    ├── vpc.png
+    ├── subnets.png
+    ├── ec2.png
+    ├── alb.png
+    ├── target-group.png
+    ├── server-a.png
+    ├── server-b.png
+    └── terraform-destroy.png
+```
+
