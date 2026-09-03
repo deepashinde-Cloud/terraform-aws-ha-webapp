@@ -46,8 +46,6 @@ The architecture consists of a Virtual Private Cloud (VPC) with two public subne
 
 An internet-facing Application Load Balancer receives HTTP requests from users and distributes the requests across two EC2 instances running Nginx.
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/98ee0021-c7c6-4cfc-865c-156f4599b145" />
-
 ### Request Flow
 
 The application follows this traffic flow:
