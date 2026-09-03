@@ -115,7 +115,7 @@ The public route table contains a default route:
 
 ## Application Load Balancer
 
-An Application Load Balancer (ALB) is used as the single entry point for users accessing the web application.
+An ALB is used as the single entry point for users accessing the web application.
 
 The ALB is internet-facing and listens for HTTP traffic on port `80`.
 
@@ -312,7 +312,7 @@ Creates or updates the infrastructure in AWS according to the Terraform configur
 
 ### 6. Verify the Deployment
 
-After deployment, the AWS Management Console and Terraform outputs were used to verify the infrastructure.`
+After deployment, the AWS Management Console and Terraform outputs were used to verify the infrastructure.
 
 ### 7. Destroy the Infrastructure
 
@@ -373,7 +373,7 @@ A public route table is configured with a default route:
 
 ## Application Load Balancer
 
-An AWS Application Load Balancer (ALB) distributes incoming HTTP traffic across the two EC2 web servers.
+An ALB distributes incoming HTTP traffic across the two EC2 web servers.
 
 The ALB is deployed across both public subnets:
 
