@@ -272,3 +272,137 @@ terraform-aws-ha-webapp/
     └── terraform-destroy.png
 ```
 
+## Terraform Deployment Workflow
+
+The infrastructure is deployed and managed using the standard Terraform workflow.
+
+### 1. Initialize Terraform
+
+```bash
+terraform init  
+```
+
+### 2. Format the Configuration
+
+```bash
+terraform fmt  
+```
+
+### 3. Validate the Configuration
+
+```bash
+terraform validate
+```
+Checks the Terraform configuration for syntax and configuration errors.
+
+
+### 4. Create an Execution Plan
+
+```bash
+terraform plan  
+```
+Shows the infrastructure changes Terraform intends to make before deployment.
+
+### 5. Apply the Configuration
+
+```bash
+terraform apply  
+```
+Creates or updates the infrastructure in AWS according to the Terraform configuration.
+
+### 6. Verify the Deployment
+
+After deployment, the AWS Management Console and Terraform outputs were used to verify the infrastructure.`
+
+### 7. Destroy the Infrastructure
+
+```bash
+terraform destroy
+```
+Removes the infrastructure managed by Terraform.
+
+
+## VPC and Networking
+
+The project creates an Amazon VPC to provide an isolated network environment for the application.
+
+### VPC Configuration
+
+| Property | Value |
+|---|---|
+| VPC Name | `terraform-ha-vpc` |
+| Region | `ap-south-1` |
+| CIDR Block | `10.0.0.0/16` |
+| DNS Support | Enabled |
+| DNS Hostnames | Enabled |
+
+The VPC uses the `10.0.0.0/16` CIDR block, providing a private IP address range for resources within the VPC.
+
+### Subnets
+
+Two public subnets are created across different Availability Zones to provide high availability.
+
+| Subnet | Availability Zone | CIDR Block |
+|---|---|---|
+| Public Subnet A | `ap-south-1a` | `10.0.1.0/24` |
+| Public Subnet B | `ap-south-1b` | `10.0.2.0/24` |
+
+Each subnet is associated with the VPC and uses a separate `/24` CIDR range.
+
+The subnets are configured to automatically assign public IPv4 addresses to launched EC2 instances.
+
+### Internet Connectivity
+
+An Internet Gateway is attached to the VPC to provide internet connectivity.
+
+A public route table contains a default route:
+
+```text
+0.0.0.0/0 → Internet Gateway
+```
+
+## Internet Gateway and Routing
+
+An Internet Gateway (IGW) is attached to the VPC to provide internet connectivity for resources in the public subnets.
+
+A public route table is configured with a default route:
+
+```text
+0.0.0.0/0 → Internet Gateway
+```
+
+## Application Load Balancer
+
+An AWS Application Load Balancer (ALB) distributes incoming HTTP traffic across the two EC2 web servers.
+
+The ALB is deployed across both public subnets:
+
+- `ap-south-1a` → Web Server A
+- `ap-south-1b` → Web Server B
+
+### Traffic Flow
+
+```text
+Internet
+    |
+    v
+Application Load Balancer
+    |
+    +--------------------+
+    |                    |
+    v                    v
+Web Server A         Web Server B
+ap-south-1a          ap-south-1b
+    |                    |
+    +-------- Nginx -----+
+```
+
+### Deployment Verification
+
+The ALB was successfully accessed through its DNS name.
+
+Both EC2 instances reported a `healthy` status in the target group, confirming that the ALB can successfully communicate with the backend Nginx servers.
+
+<img width="853" height="457" alt="Screenshot 2026-09-01 045115" src="https://github.com/user-attachments/assets/d30ef0b7-0dbd-4f65-ac49-fac586b46dea" />
+<img width="853" height="457" alt="Screenshot 2026-09-01 045115" src="https://github.com/user-attachments/assets/9ace7c68-442d-48b9-a140-8c1db84cdd3b" />
+
