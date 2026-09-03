@@ -26,6 +26,18 @@ The entire infrastructure is defined as code using Terraform, allowing it to be 
 - AWS Provider
 - HCL (HashiCorp Configuration Language)
 
+
+
+## Skills Demonstrated
+- Designing a highly available architecture across multiple Availability Zones
+- Writing modular, reusable Infrastructure as Code with Terraform (HCL)
+- Configuring VPC networking: subnets, route tables, and Internet Gateway
+- Implementing Application Load Balancer routing and target group health checks
+- Applying least-privilege security group design (ALB-only ingress to EC2)
+- Using the Terraform workflow (init, plan, apply, destroy) for safe, repeatable deployments
+
+
+
 ## Architecture
 
 The application is deployed in the AWS Mumbai Region (`ap-south-1`).
@@ -359,42 +371,6 @@ A public route table contains a default route:
 
 ```text
 0.0.0.0/0 → Internet Gateway
-```
-
-## Internet Gateway and Routing
-
-An Internet Gateway (IGW) is attached to the VPC to provide internet connectivity for resources in the public subnets.
-
-A public route table is configured with a default route:
-
-```text
-0.0.0.0/0 → Internet Gateway
-```
-
-## Application Load Balancer
-
-An ALB distributes incoming HTTP traffic across the two EC2 web servers.
-
-The ALB is deployed across both public subnets:
-
-- `ap-south-1a` → Web Server A
-- `ap-south-1b` → Web Server B
-
-### Traffic Flow
-
-```text
-Internet
-    |
-    v
-Application Load Balancer
-    |
-    +--------------------+
-    |                    |
-    v                    v
-Web Server A         Web Server B
-ap-south-1a          ap-south-1b
-    |                    |
-    +-------- Nginx -----+
 ```
 
 ### Deployment Verification
