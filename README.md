@@ -406,3 +406,27 @@ Both EC2 instances reported a `healthy` status in the target group, confirming t
 <img width="853" height="457" alt="Screenshot 2026-09-01 045115" src="https://github.com/user-attachments/assets/d30ef0b7-0dbd-4f65-ac49-fac586b46dea" />
 <img width="853" height="457" alt="Screenshot 2026-09-01 045115" src="https://github.com/user-attachments/assets/9ace7c68-442d-48b9-a140-8c1db84cdd3b" />
 
+## Testing and Verification
+
+The deployed infrastructure was verified using the AWS Management Console, AWS CLI, and the ALB DNS endpoint.
+
+### 1. Verify Terraform Resources
+
+Terraform was used to verify that all expected resources were created successfully.
+
+```bash
+terraform plan
+```
+
+### 2. Verify Target Group Health
+
+Both EC2 instances were confirmed as healthy targets.
+<img width="1901" height="979" alt="image" src="https://github.com/user-attachments/assets/ad1af355-d620-45f2-b816-5d509bdc961c" />
+
+### 3. Test the Application Load Balancer
+
+The ALB successfully served the Nginx application.
+<img width="953" height="557" alt="Screenshot 2026-09-01 045115" src="https://github.com/user-attachments/assets/376cf814-8992-47b1-886a-4ea2c87cfe08" />
+<img width="953" height="551" alt="Screenshot 2026-09-01 045126" src="https://github.com/user-attachments/assets/ef6e61c7-f2d5-47cb-9c87-f16f77b963d4" />
+
+
